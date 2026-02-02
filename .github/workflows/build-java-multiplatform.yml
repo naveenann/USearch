@@ -161,6 +161,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v5
 
+      - name: Build Java classes (without native libraries)
+        run: |
+          # Compile Java classes only, skip native library build
+          gradle compileJava -x linkUsearchSharedLibrary -x usearchSharedLibrary
+
       - name: Organize JNI libraries
         run: |
           mkdir -p build/libs/usearch/shared/{linux-amd64,linux-arm64,darwin-amd64,darwin-arm64}
@@ -178,8 +183,8 @@ jobs:
 
       - name: Build fat JAR
         run: |
-          gradle compileJava processResources
-          gradle fatJar
+          # Build fat JAR without rebuilding native libraries
+          gradle fatJar -x linkUsearchSharedLibrary -x usearchSharedLibrary
 
       - name: Verify fat JAR contents
         run: |
@@ -198,4 +203,4 @@ jobs:
           retention-days: 7
 
       - name: Run tests
-        run: gradle test
+        run: gradle test -x linkUsearchSharedLibrary -x usearchSharedLibrary
