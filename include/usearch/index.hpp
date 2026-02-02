@@ -8,8 +8,8 @@
 #define UNUM_USEARCH_HPP
 
 #define USEARCH_VERSION_MAJOR 2
-#define USEARCH_VERSION_MINOR 21
-#define USEARCH_VERSION_PATCH 4
+#define USEARCH_VERSION_MINOR 23
+#define USEARCH_VERSION_PATCH 0
 
 // Inferring C++ version
 // https://stackoverflow.com/a/61552074
@@ -3999,12 +3999,13 @@ class index_gt {
         if (!is_dummy<prefetch_at>())
             prefetch(citerator_at(closest_slot), citerator_at(closest_slot) + 1);
 
+        bool const need_lock = !is_immutable();
         distance_t closest_dist = context.measure(query, citerator_at(closest_slot), metric);
         for (level_t level = begin_level; level > end_level; --level) {
             bool changed;
             do {
                 changed = false;
-                node_lock_t closest_lock = node_lock_(closest_slot);
+                optional_node_lock_t closest_lock = optional_node_lock_(closest_slot, need_lock);
                 neighbors_ref_t closest_neighbors = neighbors_non_base_(node_at_(closest_slot), level);
 
                 // Optional prefetching
