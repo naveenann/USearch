@@ -997,3 +997,144 @@ JNIEXPORT jboolean JNICALL Java_cloud_unum_usearch_Index_c_1uses_1dynamic_1dispa
     return JNI_FALSE;
 #endif
 }
+
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1f32(
+    JNIEnv* env, jclass, jlong c_ptr, jfloatArray vector, jlong wanted) {
+
+    jfloat* vector_data = env->GetFloatArrayElements(vector, 0);
+    jsize vector_dims = env->GetArrayLength(vector);
+    f32_span_t vector_span = f32_span_t{vector_data, static_cast<std::size_t>(vector_dims)};
+
+    using vector_key_t = typename index_dense_t::vector_key_t;
+    using distance_t = typename index_dense_t::distance_t;
+    using search_result_t = typename index_dense_t::search_result_t;
+
+    search_result_t result =
+        reinterpret_cast<index_dense_t*>(c_ptr)->search(vector_span, static_cast<std::size_t>(wanted));
+    env->ReleaseFloatArrayElements(vector, vector_data, 0);
+
+    if (result) {
+        std::size_t found = result.count;
+
+        jlongArray keys = env->NewLongArray(to_jsize(env, found));
+        jfloatArray distances = env->NewFloatArray(to_jsize(env, found));
+        if (keys == NULL || distances == NULL)
+            return NULL;
+
+        jlong* keys_data = env->GetLongArrayElements(keys, 0);
+        jfloat* distances_data = env->GetFloatArrayElements(distances, 0);
+
+        for (std::size_t i = 0; i < found; i++) {
+            keys_data[i] = static_cast<jlong>(result[i].member.key);
+            distances_data[i] = static_cast<jfloat>(result[i].distance);
+        }
+
+        env->ReleaseLongArrayElements(keys, keys_data, JNI_COMMIT);
+        env->ReleaseFloatArrayElements(distances, distances_data, JNI_COMMIT);
+
+        jclass pairClass = env->FindClass("cloud/unum/usearch/Index$KeyDistancePair");
+        jmethodID constructor = env->GetMethodID(pairClass, "<init>", "([J[F)V");
+        jobject pairObject = env->NewObject(pairClass, constructor, keys, distances);
+
+        return pairObject;
+    } else {
+        jclass jc = env->FindClass("java/lang/Error");
+        if (jc)
+            env->ThrowNew(jc, result.error.release());
+        return NULL;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1f64(
+    JNIEnv* env, jclass, jlong c_ptr, jdoubleArray vector, jlong wanted) {
+
+    jdouble* vector_data = env->GetDoubleArrayElements(vector, 0);
+    jsize vector_dims = env->GetArrayLength(vector);
+    f64_span_t vector_span = f64_span_t{vector_data, static_cast<std::size_t>(vector_dims)};
+
+    using vector_key_t = typename index_dense_t::vector_key_t;
+    using distance_t = typename index_dense_t::distance_t;
+    using search_result_t = typename index_dense_t::search_result_t;
+
+    search_result_t result =
+        reinterpret_cast<index_dense_t*>(c_ptr)->search(vector_span, static_cast<std::size_t>(wanted));
+    env->ReleaseDoubleArrayElements(vector, vector_data, 0);
+
+    if (result) {
+        std::size_t found = result.count;
+
+        jlongArray keys = env->NewLongArray(to_jsize(env, found));
+        jfloatArray distances = env->NewFloatArray(to_jsize(env, found));
+        if (keys == NULL || distances == NULL)
+            return NULL;
+
+        jlong* keys_data = env->GetLongArrayElements(keys, 0);
+        jfloat* distances_data = env->GetFloatArrayElements(distances, 0);
+
+        for (std::size_t i = 0; i < found; i++) {
+            keys_data[i] = static_cast<jlong>(result[i].member.key);
+            distances_data[i] = static_cast<jfloat>(result[i].distance);
+        }
+
+        env->ReleaseLongArrayElements(keys, keys_data, JNI_COMMIT);
+        env->ReleaseFloatArrayElements(distances, distances_data, JNI_COMMIT);
+
+        jclass pairClass = env->FindClass("cloud/unum/usearch/Index$KeyDistancePair");
+        jmethodID constructor = env->GetMethodID(pairClass, "<init>", "([J[F)V");
+        jobject pairObject = env->NewObject(pairClass, constructor, keys, distances);
+
+        return pairObject;
+    } else {
+        jclass jc = env->FindClass("java/lang/Error");
+        if (jc)
+            env->ThrowNew(jc, result.error.release());
+        return NULL;
+    }
+}
+
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1i8(
+    JNIEnv* env, jclass, jlong c_ptr, jbyteArray vector, jlong wanted) {
+
+    jbyte* vector_data = env->GetByteArrayElements(vector, 0);
+    jsize vector_dims = env->GetArrayLength(vector);
+    i8_span_t vector_span = i8_span_t{reinterpret_cast<std::int8_t*>(vector_data), static_cast<std::size_t>(vector_dims)};
+
+    using vector_key_t = typename index_dense_t::vector_key_t;
+    using distance_t = typename index_dense_t::distance_t;
+    using search_result_t = typename index_dense_t::search_result_t;
+
+    search_result_t result =
+        reinterpret_cast<index_dense_t*>(c_ptr)->search(vector_span, static_cast<std::size_t>(wanted));
+    env->ReleaseByteArrayElements(vector, vector_data, 0);
+
+    if (result) {
+        std::size_t found = result.count;
+
+        jlongArray keys = env->NewLongArray(to_jsize(env, found));
+        jfloatArray distances = env->NewFloatArray(to_jsize(env, found));
+        if (keys == NULL || distances == NULL)
+            return NULL;
+
+        jlong* keys_data = env->GetLongArrayElements(keys, 0);
+        jfloat* distances_data = env->GetFloatArrayElements(distances, 0);
+
+        for (std::size_t i = 0; i < found; i++) {
+            keys_data[i] = static_cast<jlong>(result[i].member.key);
+            distances_data[i] = static_cast<jfloat>(result[i].distance);
+        }
+
+        env->ReleaseLongArrayElements(keys, keys_data, JNI_COMMIT);
+        env->ReleaseFloatArrayElements(distances, distances_data, JNI_COMMIT);
+
+        jclass pairClass = env->FindClass("cloud/unum/usearch/Index$KeyDistancePair");
+        jmethodID constructor = env->GetMethodID(pairClass, "<init>", "([J[F)V");
+        jobject pairObject = env->NewObject(pairClass, constructor, keys, distances);
+
+        return pairObject;
+    } else {
+        jclass jc = env->FindClass("java/lang/Error");
+        if (jc)
+            env->ThrowNew(jc, result.error.release());
+        return NULL;
+    }
+}

@@ -807,6 +807,48 @@ public class Index implements AutoCloseable {
         return c_uses_dynamic_dispatch();
     }
 
+    public SearchResult.Results searchWithDistances(float[] vector, long count) {
+        if (c_ptr == 0) {
+            throw new IllegalStateException("Index already closed");
+        }
+        KeyDistancePair pair = c_search_with_distances_f32(c_ptr, vector, count);
+        return convertToSearchResults(pair);
+    }
+
+    public SearchResult.Results searchWithDistances(double[] vector, long count) {
+        if (c_ptr == 0) {
+            throw new IllegalStateException("Index already closed");
+        }
+        KeyDistancePair pair = c_search_with_distances_f64(c_ptr, vector, count);
+        return convertToSearchResults(pair);
+    }
+
+    public SearchResult.Results searchWithDistances(byte[] vector, long count) {
+        if (c_ptr == 0) {
+            throw new IllegalStateException("Index already closed");
+        }
+        KeyDistancePair pair = c_search_with_distances_i8(c_ptr, vector, count);
+        return convertToSearchResults(pair);
+    }
+
+    private SearchResult.Results convertToSearchResults(KeyDistancePair pair) {
+        SearchResult[] results = new SearchResult[pair.keys.length];
+        for (int i = 0; i < pair.keys.length; i++) {
+            results[i] = new SearchResult(pair.keys[i], pair.distances[i]);
+        }
+        return new SearchResult.Results(results);
+    }
+
+    static class KeyDistancePair {
+        final long[] keys;
+        final float[] distances;
+
+        KeyDistancePair(long[] keys, float[] distances) {
+            this.keys = keys;
+            this.distances = distances;
+        }
+    }
+
     /**
      * Builder for configuring Index instances. Uses builder pattern - call
      * {@link #build()} to create Index.
@@ -1122,4 +1164,13 @@ public class Index implements AutoCloseable {
 
     private static native int c_search_into_i8_buffer(
             long ptr, java.nio.ByteBuffer query, java.nio.LongBuffer results, long maxCount);
+
+    private static native KeyDistancePair c_search_with_distances_f32(
+            long ptr, float vector[], long count);
+
+    private static native KeyDistancePair c_search_with_distances_f64(
+            long ptr, double vector[], long count);
+
+    private static native KeyDistancePair c_search_with_distances_i8(
+            long ptr, byte vector[], long count);
 }

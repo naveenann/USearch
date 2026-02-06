@@ -327,6 +327,30 @@ JNIEXPORT jint JNICALL Java_cloud_unum_usearch_Index_c_1search_1into_1f64_1buffe
 JNIEXPORT jint JNICALL Java_cloud_unum_usearch_Index_c_1search_1into_1i8_1buffer
   (JNIEnv *, jclass, jlong, jobject, jobject, jlong);
 
+/*
+ * Class:     cloud_unum_usearch_Index
+ * Method:    c_search_with_distances_f32
+ * Signature: (J[FJ)Lcloud/unum/usearch/Index/KeyDistancePair;
+ */
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1f32
+  (JNIEnv *, jclass, jlong, jfloatArray, jlong);
+
+/*
+ * Class:     cloud_unum_usearch_Index
+ * Method:    c_search_with_distances_f64
+ * Signature: (J[DJ)Lcloud/unum/usearch/Index/KeyDistancePair;
+ */
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1f64
+  (JNIEnv *, jclass, jlong, jdoubleArray, jlong);
+
+/*
+ * Class:     cloud_unum_usearch_Index
+ * Method:    c_search_with_distances_i8
+ * Signature: (J[BJ)Lcloud/unum/usearch/Index/KeyDistancePair;
+ */
+JNIEXPORT jobject JNICALL Java_cloud_unum_usearch_Index_c_1search_1with_1distances_1i8
+  (JNIEnv *, jclass, jlong, jbyteArray, jlong);
+
 #ifdef __cplusplus
 }
 #endif
