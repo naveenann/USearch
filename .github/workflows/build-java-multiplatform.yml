@@ -144,10 +144,13 @@ jobs:
         include:
           - arch: x64
             cmake_arch: x64
+            simsimd_targets: "-DSIMSIMD_TARGET_HASWELL=1 -DSIMSIMD_TARGET_SKYLAKE=1 -DSIMSIMD_TARGET_ICE=1"
           - arch: x86
             cmake_arch: Win32
+            simsimd_targets: "-DSIMSIMD_TARGET_HASWELL=1 -DSIMSIMD_TARGET_SKYLAKE=1"
           - arch: arm64
             cmake_arch: ARM64
+            simsimd_targets: ""
 
     steps:
       - name: Checkout
@@ -162,9 +165,16 @@ jobs:
           java-version: ${{ env.JAVA_VERSION }}
           distribution: "adopt"
 
+      - name: Set up MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: ${{ matrix.arch }}
+
       - name: Build JNI library
         run: |
-          cmake -B build_artifacts -A ${{ matrix.cmake_arch }} `
+          cmake -B build_artifacts `
+            -G "Visual Studio 17 2022" `
+            -A ${{ matrix.cmake_arch }} `
             -DCMAKE_BUILD_TYPE=Release `
             -DUSEARCH_BUILD_JNI=1 `
             -DUSEARCH_BUILD_TEST_CPP=0 `
@@ -172,11 +182,7 @@ jobs:
             -DUSEARCH_BUILD_LIB_C=0 `
             -DUSEARCH_USE_FP16LIB=1 `
             -DUSEARCH_USE_SIMSIMD=1 `
-            -DSIMSIMD_TARGET_HASWELL=1 `
-            -DSIMSIMD_TARGET_SKYLAKE=1 `
-            -DSIMSIMD_TARGET_ICE=1 `
-            -DSIMSIMD_TARGET_GENOA=0 `
-            -DSIMSIMD_TARGET_SAPPHIRE=0 `
+            ${{ matrix.simsimd_targets }} `
             -DSIMSIMD_DYNAMIC_DISPATCH=1
 
           cmake --build build_artifacts --config Release
