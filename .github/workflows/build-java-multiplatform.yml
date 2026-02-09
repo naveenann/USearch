@@ -137,6 +137,7 @@ jobs:
 
   build_jni_windows:
     name: Build JNI for Windows
+    if: false  # Disabled - skip Windows builds
     runs-on: windows-2022
     strategy:
       fail-fast: false
@@ -196,7 +197,7 @@ jobs:
 
   build_fat_jar:
     name: Build Fat JAR
-    needs: [build_jni_macos, build_jni_linux, build_jni_windows]
+    needs: [build_jni_macos, build_jni_linux]
     runs-on: ubuntu-24.04
 
     steps:
@@ -227,7 +228,7 @@ jobs:
 
       - name: Organize JNI libraries
         run: |
-          mkdir -p build/libs/usearch/shared/{linux-amd64,linux-arm64,darwin-amd64,darwin-arm64,windows-amd64,windows-x86,windows-arm64}
+          mkdir -p build/libs/usearch/shared/{linux-amd64,linux-arm64,darwin-amd64,darwin-arm64}
 
           # Linux
           cp usearch-jni-linux-amd64/libusearch_jni.so build/libs/usearch/shared/linux-amd64/ || true
@@ -236,11 +237,6 @@ jobs:
           # macOS
           cp usearch-jni-macos-amd64/libusearch_jni.dylib build/libs/usearch/shared/darwin-amd64/ || true
           cp usearch-jni-macos-arm64/libusearch_jni.dylib build/libs/usearch/shared/darwin-arm64/ || true
-
-          # Windows
-          cp usearch-jni-windows-x64/libusearch_jni.dll build/libs/usearch/shared/windows-amd64/ || true
-          cp usearch-jni-windows-x86/libusearch_jni.dll build/libs/usearch/shared/windows-x86/ || true
-          cp usearch-jni-windows-arm64/libusearch_jni.dll build/libs/usearch/shared/windows-arm64/ || true
 
           echo "=== JNI libraries organized ==="
           find build/libs/usearch/shared -name "libusearch_jni.*" | sort
@@ -267,12 +263,12 @@ jobs:
           echo "Native libraries in JAR:"
           jar tf "$JAR_FILE" | grep -E "usearch-native.*\.(so|dll|dylib)" | sort
 
-          lib_count=$(jar tf "$JAR_FILE" | grep -E "usearch-native.*\.(so|dll|dylib)" | wc -l)
+          lib_count=$(jar tf "$JAR_FILE" | grep -E "usearch-native.*\.(so|dylib)" | wc -l)
           echo ""
           echo "Total native libraries: $lib_count"
 
-          if [ "$lib_count" -lt 5 ]; then
-            echo "WARNING: Expected at least 5 libraries, found $lib_count"
+          if [ "$lib_count" -lt 4 ]; then
+            echo "WARNING: Expected at least 4 libraries (macOS x2, Linux x2), found $lib_count"
           fi
 
       - name: Upload fat JAR
